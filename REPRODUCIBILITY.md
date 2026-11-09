@@ -8,11 +8,17 @@ Stable-Baselines3 2.9.2, Box2D 2.3.10 and NumPy 2.4.6. This is a tested snapshot
 claim that all future combinations inside the pyproject ranges will behave identically.
 
 Install from the lock with Python 3.11, then editable-install the project with `--no-deps`.
-The original `.venv` has a project-local `.python` base; recreate it when moving machines.
+Recreate `.venv` when moving machines.
+
+Handoff re-verification: a fresh Git clone on Windows 11 with Python 3.12.2 and `pip install -e ".[dev]"`
+resolved the same primary versions except NumPy 2.5.4. `scripts.doctor` succeeded, 26 tests passed and
+ruff was clean. The delivered experiments themselves ran on Python 3.11.18.
 
 The `manifest.json` in each suite includes operating system, processor identifier, logical
 CPU count, RAM, package versions, resolved YAML configuration, creation timestamp and
-configuration hash. Git revision is null because the starting workspace was not a Git repository.
+configuration hash. Git revision is null in the delivered manifests because the experiments ran before the
+workspace was a Git repository. The project is now tracked at
+`github.com/trynottofear/Autonomous_Lunar_Landing_ARLO_Project`.
 Source hashes and final artifact hashes are recorded in the handoff metadata.
 
 ## Fixed experimental design
@@ -62,10 +68,22 @@ for trained policies. Optional stochastic reevaluation is saved in a separate la
 ```
 
 Use the explicit run paths in `docs/EXECUTION_RECORD.md` to regenerate the delivered artifacts
-without training. `scripts.verify_artifacts --run <suite> --report report/report.pdf` reopens all
+without training. `scripts.verify_artifacts --run <suite> --report report/full/report.pdf` reopens all
 selected policies, repeats the complete final evaluation, verifies episode returns and lengths,
 checks accounting equations, renders the PDF and decodes every recorded MP4's first frame.
-The extra verification interactions are saved separately in `verification.json`.
+The extra verification interactions are saved separately in `verification.json`. This needs
+the model checkpoints, which are not committed to Git; a fresh clone must retrain first.
+
+Regenerate the delivered full-study plots and report from the committed CSVs (no training):
+
+```powershell
+$run = 'results/raw/full_2f0cf7ab0f_20261109T150901Z_6d56ad'
+$rob = "$run/robustness/robustness_2f0cf7ab0f_20261109T153100Z_5ebc0a"
+$sweep = 'results/ablations/sweep_eed27f6fcc_20261109T151055Z_a7de6f'
+.\.venv\Scripts\python.exe -m scripts.generate_plots --run $run
+.\.venv\Scripts\python.exe -m scripts.generate_plots --run $rob --supplement
+.\.venv\Scripts\python.exe -m scripts.generate_report --run $run --supplement $sweep --supplement $rob --output report/full
+```
 
 ## Compare a reproduced run
 
@@ -91,4 +109,6 @@ Three training seeds support only preliminary uncertainty estimates. Five valida
 can be overfit through repeated model selection. GA and PPO perform different numbers of
 selection evaluations; both cost and selection-opportunity differences must be considered.
 The reduced sensitivity suite has one seed and different population/fitness settings from the
-main study. The full confirmatory sweep is a separate, more expensive experiment.
+main study. The full confirmatory sweep is a separate, more expensive experiment and was not executed.
+In 8 of 11 exploratory hybrid runs, validation kept the initial GA actor (no PPO checkpoint beat it).
+The robustness evaluation omits `ppo_short_seed23`.

@@ -7,13 +7,35 @@ a genetic algorithm, PPO, GA-initialized PPO, and a PPO-short control. All train
 the same 8-64-64-4 Tanh network (4,996 parameters). The hybrid copies actual actor tensors into
 Stable-Baselines3 PPO, verifies logits and actions, then trains actor and critic.
 
-Start with `report/report.pdf` for the research report, `PROJECT_STATUS.md` for verified execution
-status, and `docs/DEMONSTRATION.md` for a presentation walkthrough. Student/institution fields
+Start with `report/full/report.pdf` for the full-study research report, `PROJECT_STATUS.md` for
+verified execution status, `docs/EXECUTION_RECORD.md` for exact run paths and results, and
+`docs/DEMONSTRATION.md` for a presentation walkthrough. Student/institution fields
 are deliberately left for you to fill in.
+
+## Results at a glance
+
+Full study: 3 training seeds, 1,000,000-transition ceiling per trained agent, 100 deterministic
+test episodes per model on common held-out starts.
+
+| Agent | Mean test return (seed SD) | Solved (>=200) |
+|---|---:|---:|
+| Random | -178.3 | 0.0% |
+| GA | -49.5 (37.3) | 1.7% |
+| PPO | **268.4** (4.1) | 100.0% |
+| GA-PPO | 244.1 (12.3) | 96.7% |
+| PPO-short | 256.2 (5.2) | 100.0% |
+
+The GA beats random but does not solve the task. GA initialization gives PPO a much better
+starting policy, but the hybrid then learns more slowly. It finished below full-budget PPO on all
+three seeds (paired difference -24.2, seed-bootstrap CI [-41.1, -15.4]) and below the PPO-short
+control. With three seeds, this is preliminary evidence *against* a hybrid advantage in this
+configuration. All agents degrade under strong wind, and the hybrid shows no robustness advantage.
+See `docs/EXECUTION_RECORD.md` for per-seed numbers, robustness and sweep notes.
 
 ## Windows setup
 
-Python **3.11, 64-bit** and PowerShell are recommended. CPU is sufficient. No WSL, Docker,
+Python **3.11 or 3.12, 64-bit** and PowerShell are recommended (experiments ran on 3.11.18;
+a fresh clone was re-verified on 3.12.2 with `py -3.12`). CPU is sufficient. No WSL, Docker,
 CUDA, LaTeX installation or external video encoder is required. The verified installation
 uses Gymnasium's Windows Box2D binary wheel and pygame-ce (which exposes the `pygame` API).
 Do not install both pygame and pygame-ce into the same environment.
@@ -26,9 +48,9 @@ py -3.11 -m venv .venv
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
-The existing workspace already has a working `.venv`; use its Python directly. Its locally
-downloaded Python base is in `.python`, so retain that directory on this machine. These folders
-are machine-specific and excluded from Git. On another computer create a fresh environment.
+`.venv` is machine-specific and excluded from Git; create a fresh one on every computer.
+Model checkpoints and MP4 videos are also excluded from Git (only their manifests are committed),
+so a fresh clone must retrain before evaluating, recording, or running robustness.
 
 To reproduce the tested versions rather than resolve new versions:
 
@@ -166,23 +188,23 @@ additional. Never load untrusted SB3 ZIP checkpoints.
 | `results/raw/<suite>` | Configuration, machine/package metadata, per-agent results and models |
 | `<suite>/analysis` | Per-seed metrics, aggregate tables, paired contrasts, threshold observations |
 | `<suite>/plots` | PNG and SVG plots regenerated from measured CSV files |
-| `report` | PDF, Markdown, LaTeX, bibliography and source hashes |
+| `report/full`, `report/quick` | PDF, Markdown, LaTeX, figures, bibliography and source hashes |
 | `videos` | Labeled gameplay MP4s and recording manifests |
 | `notebooks` | Optional read-only results exploration |
 | `docs` | Protocol, algorithms, architecture and demonstration notes |
 
-Models are colocated with run metadata rather than duplicated in a global `models/` folder.
+Models are colocated with run metadata rather than duplicated in a global `models/` folder
+(they are written locally but not committed).
 This preserves their configuration and selection history. Generated files are created automatically.
 
 ## Troubleshooting
 
 If Box2D fails, first run `python --version` and `python -c "import platform; print(platform.architecture())"`.
 Inspect the actual pip error and check for a compatible Windows wheel. The verified snapshot
-has Box2D 2.3.10 wheels on Python 3.11. If a source build is required, install SWIG and Microsoft
+has Box2D 2.3.10 wheels on Python 3.11 and 3.12. If a source build is required, install SWIG and Microsoft
 C++ Build Tools before retrying; do not randomly downgrade Gymnasium.
 
-If `py -3.11` is missing, install 64-bit Python 3.11 or use an existing Python 3.11 interpreter
-to create the environment. No PowerShell execution-policy change is needed when calling
+If `py -3.11` is missing, use `py -3.12` or install 64-bit Python 3.11. No PowerShell execution-policy change is needed when calling
 `.venv\Scripts\python.exe` directly. If packages cannot be downloaded, retain the exact error
 and resolve network access before attempting training.
 

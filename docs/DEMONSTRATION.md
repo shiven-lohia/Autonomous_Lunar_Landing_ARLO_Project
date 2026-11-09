@@ -1,6 +1,6 @@
 # Course demonstration and viva guide
 
-1. Open `report/report.pdf`. State the hypothesis: does a useful evolved initialization justify
+1. Open `report/full/report.pdf`. State the hypothesis: does a useful evolved initialization justify
    the interactions spent finding it? Do not assume the hybrid should win.
 2. Show the architecture figure: eight observations, two Tanh hidden layers, four action logits.
    Explain the 4,996-scalar chromosome and separate PPO critic.
@@ -9,7 +9,8 @@
    returns, and changed actor weights after PPO. This distinguishes real transfer from relabeling.
 5. Show `analysis/comparison.csv`, `plots/learning_curves.png` and `plots/interaction_accounting.png`.
    Explain equal allocation ceilings, actual step counts, leftover budgets and evaluation overhead.
-6. Play the median-selection MP4s. Explain that return >=200 and a resting physical landing are
+6. Play the median-selection MP4s. MP4s are not committed to Git; on a fresh clone, retrain
+   the full suite (or one seed) and record with `scripts.record_gameplay` first. Explain that return >=200 and a resting physical landing are
    different measurements. The overlay records selection method and episode seed.
 7. Show PPO-short. It isolates the value of the initialization when gradient-training time is equal.
 8. Show the actual sensitivity and robustness results, while stating their experimental scale.
@@ -34,3 +35,5 @@ Likely questions:
 
 Before submission, fill in your name, institution, course section and instructor if required.
 Read the final measured findings and the limitations; the report generator does not invent a win.
+The measured headline: PPO 268.4, PPO-short 256.2, GA-PPO 244.1, GA -49.5, random -178.3. The hybrid
+lost to PPO on all three seeds, so present it as a well-controlled negative result for the hybrid hypothesis.
