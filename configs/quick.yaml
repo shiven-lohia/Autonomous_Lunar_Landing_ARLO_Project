@@ -1,0 +1,14 @@
+name: quick
+experiment:
+  seeds: [11]
+  total_optimization_steps: 100000
+  final_eval_episodes: 20
+  validation_episodes: 3
+  checkpoint_interval: 20000
+ga:
+  population_size: 8
+  elite_count: 2
+  fitness_episodes: 2
+ppo:
+  n_steps: 512
+  n_envs: 2

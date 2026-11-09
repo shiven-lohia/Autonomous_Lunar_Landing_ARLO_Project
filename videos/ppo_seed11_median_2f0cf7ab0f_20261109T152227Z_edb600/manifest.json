@@ -1,0 +1,14 @@
+{
+  "suite": "results\\raw\\full_2f0cf7ab0f_20261109T150901Z_6d56ad",
+  "agent": "ppo",
+  "training_seed": 11,
+  "episodes": [
+    {
+      "path": "episode_40002.mp4",
+      "episode_seed": 40002,
+      "return": 270.6094379090233,
+      "steps": 263,
+      "selection": "median"
+    }
+  ]
+}

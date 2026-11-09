@@ -1,0 +1,8 @@
+name: full
+# Defaults are explicitly resolved and saved in every suite's manifest.json.
+experiment:
+  seeds: [11, 23, 37]
+  total_optimization_steps: 1000000
+  final_eval_episodes: 100
+  validation_episodes: 5
+  checkpoint_interval: 50000

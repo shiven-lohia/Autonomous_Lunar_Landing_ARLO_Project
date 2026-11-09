@@ -1,0 +1,133 @@
+{
+  "config": {
+    "name": "hybrid_ga_budget_fraction_0.25",
+    "environment": {
+      "id": "LunarLander-v3",
+      "continuous": false,
+      "enable_wind": false,
+      "gravity": -10.0,
+      "max_episode_steps": 1000
+    },
+    "experiment": {
+      "seeds": [
+        11
+      ],
+      "total_optimization_steps": 160000,
+      "final_eval_episodes": 20,
+      "checkpoint_interval": 40000,
+      "validation_episodes": 3,
+      "threads": 1
+    },
+    "network": {
+      "actor_hidden": [
+        64,
+        64
+      ],
+      "critic_hidden": [
+        64,
+        64
+      ],
+      "activation": "tanh"
+    },
+    "ga": {
+      "population_size": 10,
+      "elite_count": 2,
+      "tournament_size": 3,
+      "mutation_probability": 0.05,
+      "mutation_sigma": 0.05,
+      "crossover_probability": 0.7,
+      "crossover_type": "uniform",
+      "fitness_episodes": 1,
+      "immigrant_rate": 0.0,
+      "max_generations": null
+    },
+    "ppo": {
+      "learning_rate": 0.0003,
+      "gamma": 0.999,
+      "gae_lambda": 0.98,
+      "clip_range": 0.2,
+      "n_steps": 512,
+      "batch_size": 64,
+      "n_epochs": 4,
+      "ent_coef": 0.01,
+      "n_envs": 2,
+      "device": "cpu"
+    },
+    "hybrid": {
+      "ga_budget_fraction": 0.25,
+      "transfer_actor_only": true
+    },
+    "evaluation": {
+      "deterministic": true,
+      "solved_reward_threshold": 200,
+      "validation_seed_start": 20000,
+      "final_seed_start": 60000
+    },
+    "evaluation_split": "development_ablation"
+  },
+  "config_hash": "0bdc66ce54",
+  "git_commit": null,
+  "python": "3.11.18",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 186 Stepping 2, GenuineIntel",
+  "logical_cpus": 12,
+  "ram_gib": 15.7,
+  "packages": {
+    "garl-lander": "1.0.0",
+    "absl-py": "2.5.1",
+    "Box2D": "2.3.10",
+    "charset-normalizer": "3.5.2",
+    "cloudpickle": "3.1.2",
+    "colorama": "0.4.6",
+    "contourpy": "1.3.3",
+    "coverage": "7.17.2",
+    "cycler": "0.12.1",
+    "Farama-Notifications": "0.0.6",
+    "filelock": "4.2.9",
+    "fonttools": "4.68.0",
+    "fsspec": "2026.9.0",
+    "grpcio": "1.85.1",
+    "gymnasium": "1.4.0",
+    "ImageIO": "2.38.1",
+    "imageio-ffmpeg": "0.8.1",
+    "iniconfig": "2.3.1",
+    "Jinja2": "3.1.6",
+    "kiwisolver": "1.5.1",
+    "Markdown": "3.11.3",
+    "MarkupSafe": "3.0.4",
+    "matplotlib": "3.11.2",
+    "mpmath": "1.3.0",
+    "networkx": "3.6.1",
+    "numpy": "2.4.6",
+    "packaging": "26.3",
+    "pandas": "2.3.3",
+    "pillow": "13.0.0",
+    "pluggy": "1.7.0",
+    "protobuf": "7.36.2",
+    "psutil": "7.2.2",
+    "pygame-ce": "2.5.8",
+    "Pygments": "2.21.0",
+    "pymupdf": "1.28.2",
+    "pyparsing": "3.3.3",
+    "pytest": "9.2.0",
+    "pytest-cov": "7.1.0",
+    "python-dateutil": "4.0.0",
+    "pytz": "2026.6",
+    "PyYAML": "6.0.3",
+    "reportlab": "4.5.1",
+    "ruff": "0.17.4",
+    "scipy": "1.17.1",
+    "seaborn": "0.13.2",
+    "setuptools": "84.2.1",
+    "stable_baselines3": "2.9.2",
+    "sympy": "1.14.0",
+    "tensorboard": "2.21.0",
+    "tensorboard-data-server": "0.7.2",
+    "torch": "2.15.0",
+    "tqdm": "4.70.1",
+    "typing_extensions": "4.16.0",
+    "tzdata": "2026.6",
+    "Werkzeug": "3.1.9"
+  },
+  "created_utc": "2026-11-09T15:22:41.528963+00:00"
+}

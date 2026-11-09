@@ -1,0 +1,9 @@
+episode_seed,return,length,terminated,truncated,outcome,solved,engine_actions,deterministic,generation,candidate
+6500000,-192.539153127396,78,True,False,crash,False,0,True,1,0
+6500000,-83.59389892757318,79,True,False,crash,False,19,True,1,1
+6500000,-235.40298565657406,78,True,False,crash,False,8,True,1,2
+6500000,-226.56850335919597,83,True,False,crash,False,20,True,1,3
+6500001,-108.4118271708146,80,True,False,crash,False,10,True,2,0
+6500001,-143.91284452631712,79,True,False,crash,False,0,True,2,1
+6500001,-608.4661044772174,117,True,False,out_of_bounds,False,96,True,2,2
+6500001,-763.8574809021259,75,True,False,crash,False,75,True,2,3

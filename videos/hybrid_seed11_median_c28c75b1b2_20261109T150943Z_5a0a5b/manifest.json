@@ -1,0 +1,14 @@
+{
+  "suite": "results\\raw\\quick_c28c75b1b2_20261109T150437Z_3dac13",
+  "agent": "hybrid",
+  "training_seed": 11,
+  "episodes": [
+    {
+      "path": "episode_40008.mp4",
+      "episode_seed": 40008,
+      "return": -132.2766657271167,
+      "steps": 649,
+      "selection": "median"
+    }
+  ]
+}

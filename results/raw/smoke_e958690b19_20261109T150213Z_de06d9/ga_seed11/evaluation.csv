@@ -1,0 +1,4 @@
+episode_seed,return,length,terminated,truncated,outcome,solved,engine_actions,deterministic
+40000,-140.54869814569298,62,True,False,crash,False,0,True
+40001,-123.03616165928796,84,True,False,crash,False,0,True
+40002,-145.90786937303554,58,True,False,crash,False,0,True

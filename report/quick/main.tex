@@ -1,0 +1,355 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=24mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx,longtable,booktabs,hyperref}
+\usepackage{float}
+\hypersetup{colorlinks=true,urlcolor=blue}
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0pt}
+\title{Evolutionary Optimization of Reinforcement Learning Policies for Autonomous Lunar Landing: A Comparative Study of Genetic Algorithms, PPO, and Hybrid GA-PPO}
+\author{[Your name] \\ [Your institution] \\ Applied Reinforcement Learning and Optimization}
+\date{09 November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+This project investigates whether evolutionary initialization improves reinforcement learning for autonomous landing in the discrete LunarLander-v3 environment. A genetic algorithm optimizes all 4,996 parameters of a neural actor, after which proximal policy optimization fine-tunes the transferred actor while learning a newly initialized critic. The comparison includes a uniformly random policy, pure genetic search, PPO from scratch, the two-stage hybrid, and a PPO-short control that matches the hybrid's gradient-training interactions. Optimization is constrained by a common interaction ceiling, with complete GA fitness episodes and complete PPO rollouts. Validation, final evaluation, and unused allocation are measured separately. Policies are selected using validation starts and then evaluated on a common, disjoint test seed set. The reported preliminary experiment uses 1 independent training seeds, an allocation of 100,000 transitions per main trained agent, and 20 test episodes per checkpoint. Mean test returns were -131.3 for GA, -61.6 for PPO, -117.6 for GA-PPO, and -106.4 for PPO-short. These measurements describe the implemented configuration rather than a general ranking of optimization methods. The repository supplies unit and integration tests, numerical actor-transfer verification, resumable genetic checkpoints, machine-readable interaction ledgers, learning curves, gameplay recordings, and generated report sources. Uncertainty is summarized at the training-seed level to avoid treating many episodes from one policy as independent training replications. Limitations include the small number of training seeds, validation selection effects, weight-space crossover disruption, and the cost of population evaluation. The study tests the hybrid hypothesis without assuming that combining optimization methods guarantees better performance.
+\end{abstract}
+\newpage
+\tableofcontents
+\newpage
+\section*{1. Introduction}
+\addcontentsline{toc}{section}{1. Introduction}
+Reinforcement learning optimizes decisions whose consequences unfold over time. Autonomous landing is a useful course benchmark because attitude, velocity, contact, and engine control interact through nonlinear dynamics. An actor must trade immediate thrust costs against the delayed consequences of a stable touchdown.
+
+Gradient optimization exploits differentiable policy models but can be sensitive to initialization and sampled trajectories. Evolution evaluates complete behaviors without differentiating through the environment, at the cost of many interactions. This project examines whether evolutionary search provides an initialization worth its cost.
+
+Contributions are an auditable two-stage implementation, a matched architecture across methods, a PPO-short control, explicit interaction accounting, and an experiment-to-report pipeline. The null position is that GA initialization offers no consistent benefit once its interactions and wall time are included.
+
+\section*{2. Literature review}
+\addcontentsline{toc}{section}{2. Literature review}
+Such et al. [2] study genetic optimization of deep neural policies and demonstrate that direct weight search can scale beyond small networks. Their findings motivate testing neuroevolution here, but do not establish its effectiveness for this architecture, budget, or LunarLander version.
+
+Schulman et al. [1] introduce PPO, alternating trajectory collection with minibatch optimization of a surrogate policy objective. This project uses the tested Stable-Baselines3 implementation described by Raffin et al. [4], with explicit settings and reproducible package versions.
+
+Khadka and Tumer [3] combine evolutionary populations and policy gradients through shared experience and periodic reinsertion of a gradient-trained policy. Our method has a single actor transfer followed by PPO training. It does not reproduce that interleaved ERL algorithm. Its narrower question concerns the value of evolved initialization.
+
+\section*{3. Problem formulation and hypotheses}
+\addcontentsline{toc}{section}{3. Problem formulation and hypotheses}
+The task is an episodic Markov decision process M=(S,A,P,R,gamma). The eight observations encode position, linear velocity, angle, angular velocity, and two leg contacts. Actions are no thrust, left orientation engine, main engine, and right orientation engine [5]. Orientation engines apply forces and torques; they are not direct horizontal displacement commands.
+
+The objective is expected discounted return J(theta)=E[sum\_t gamma\textasciicircum{}t r\_t], while evaluation reports the undiscounted episode return. Default rewards combine state-dependent shaping and engine-use penalties. Episodes end through crash, leaving bounds, resting, or the time limit. The benchmark keeps the original reward function, raw observations, discrete actions, default gravity and no wind.
+
+H1: GA produces policies better than random under the allocated budget. H2: evolved initialization improves validation performance before PPO updates. H3: the hybrid reaches observed validation thresholds with fewer total optimization interactions than PPO. H4: the hybrid improves final return relative to both PPO and PPO-short. H5: mutation, population size, crossover, and budget fraction materially affect results. H6: any interaction advantage remains after wall-clock accounting. H7: any advantage persists under held-out disturbances. Each hypothesis can fail; evidence is reported descriptively with paired training-seed comparisons.
+
+\section*{4. Methodology}
+\addcontentsline{toc}{section}{4. Methodology}
+All trainable actors use Linear(8,64), Tanh, Linear(64,64), Tanh, Linear(64,4). The parameter count is 8*64+64+64*64+64+64*4+4=4,996. GA selects argmax logits; PPO trains a categorical policy. The PPO critic has separate 64-unit hidden layers and a scalar output. Observations and rewards are not normalized.
+
+Each GA chromosome concatenates weights and biases in layer order. Initialization uses independent uniform samples with the ordinary linear-layer fan-in bounds. Candidate fitness is mean return over common seeds within a generation; training seeds change between generations. Tournament selection, configurable uniform or blend crossover, per-gene Gaussian mutation, and copied elites generate the next population. Diversity is mean standard deviation across chromosome coordinates. Non-finite parameters and fitness raise errors.
+
+GA pseudocode: initialize population; reserve a complete worst-case generation; evaluate every candidate on common episode seeds; validate the generation winner; retain the best validation checkpoint; log statistics; copy elites and breed offspring; atomically checkpoint population, counters, champion and random-generator states; repeat while another generation fits. The first actor is also a validation candidate. Selection ties retain the earlier policy. This prevents discarding a useful initial actor.
+
+PPO optimizes Lclip=E[min(r\_t*A\_t, clip(r\_t,1-epsilon,1+epsilon)*A\_t)], where r\_t is the current-to-old action-probability ratio and A\_t is a generalized-advantage estimate. Clipping limits the incentive for large probability-ratio changes. The implementation also trains a value function and includes an entropy term. These are SB3 updates; no alternate PPO optimizer is substituted [1,6].
+
+Hybrid pseudocode: allocate a fraction of the budget to GA; select its actor on validation seeds; construct a fresh PPO actor-critic; copy three actor weight matrices and bias vectors; verify raw logits and actions on synthetic and actual environment-reset observations; verify the critic is unchanged; train PPO for the remaining actual budget rounded down to complete rollouts. Optimizer state is fresh. PPO-short starts from scratch for exactly the number of transitions actually used by the hybrid's PPO stage.
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.96\textwidth]{figures/architecture.png}
+\caption{Architecture}
+\end{figure}
+\section*{5. Experimental setup}
+\addcontentsline{toc}{section}{5. Experimental setup}
+Recorded mode: quick. Training seeds: [11]. Allocation: 100,000 transitions per GA, PPO and hybrid run. Final evaluation: 20 episodes per saved selected model. Validation uses 3 episodes from seed 20000; final testing starts at 40000. Optimization seeds occupy separate integer domains at or above one million. Initialization, selection, crossover and mutation use separate reproducible random streams.
+
+Primary fairness uses an equal allocation ceiling, not artificially equal actual steps. GA reserves population\_size * fitness\_episodes * episode\_limit transitions before a generation. This conservative rule leaves some unused allocation. Hybrid PPO receives the remaining actual allocation. SB3's usual rollout rounding is explicitly handled by rounding down; the transition counter verifies the result. Selection and final-test interactions are outside the primary optimization ceiling and reported separately.
+
+PPO validation occurs after optimizer updates at the first rollout boundary meeting the checkpoint interval and at the final update. Initial, selected, latest and final policies are distinguishable. Final evaluation uses the validation-selected model, which can be an earlier checkpoint than the last update. GA validation occurs once per generation; unequal selection opportunity is a limitation and its cost is disclosed.
+
+Hardware: Intel64 Family 6 Model 186 Stepping 2, GenuineIntel; 12 logical CPUs; 15.7 GiB RAM. Software: Python 3.11.18, Windows-10-10.0.26200-SP0. CPU training uses 1 Torch thread(s). Package versions and resolved configuration are stored with each run. Wall time includes optimization and model selection, and excludes final testing. The delivered experiments ran on a shared workstation while report generation and exploratory sweeps also ran. These timings describe observed elapsed cost, not an isolated-system speed benchmark.
+
+Uncertainty: compute each policy's mean across common test starts, then aggregate those means across independent training seeds. Percentile bootstrap intervals resample training-seed means (10,000 replicates). Intervals are omitted for fewer than three training seeds. With three seeds they are preliminary, not strong population evidence. Random-agent repetitions use the same fixed action RNG and are not independent training replications. Paired episode differences are descriptive; inference does not treat episodes as training seeds.
+
+\section*{6. Results}
+\addcontentsline{toc}{section}{6. Results}
+Mean test returns were -131.3 for GA, -61.6 for PPO, -117.6 for GA-PPO, and -106.4 for PPO-short.
+
+Tables report actual saved measurements. Dots in performance plots show training-seed means; error bars are seed-bootstrap intervals when available. Learning curves use validation observations and include the hybrid's GA-stage selected-champion measurements and GA cost on the primary x-axis. Separate plots show PPO-stage observations against PPO-only cost, total cost including validation, and wall time. Curves interpolate only within the range jointly observed across seeds; bands show one standard deviation, not confidence intervals.
+
+GA fitness curves need not increase monotonically because generation seeds change. Validation-selected champion scores can increase even when current-generation scores fall. Solved-episode rate means return at least 200. A resting landing is separately identified from the simulator's sleep and crash signals; it does not guarantee the landing pad was reached. Engine action counts are a usage proxy, not fuel consumed.
+
+The GA-minus-random mean-return difference is +69.0 points. GA's mean solved-episode rate is 0.0\%. Improvement over random behavior and solving the landing task are distinct outcomes.
+
+\subsection*{Performance across training seeds}
+\begingroup\small
+\begin{longtable}{p{0.153\textwidth}p{0.153\textwidth}p{0.153\textwidth}p{0.153\textwidth}p{0.153\textwidth}p{0.153\textwidth}}
+\toprule
+Agent & Seeds & Return & Seed SD & 95\% bootstrap CI & Solved \\
+\midrule\endhead
+GA & 1 & -131.3 & n/a & not estimated & 0.0\% \\
+GA-PPO & 1 & -117.6 & n/a & not estimated & 0.0\% \\
+PPO & 1 & -61.6 & n/a & not estimated & 0.0\% \\
+PPO-short & 1 & -106.4 & n/a & not estimated & 0.0\% \\
+Random & 0 & -200.3 & n/a & not estimated & 0.0\% \\
+\bottomrule\end{longtable}
+\endgroup
+\subsection*{Mean resource use per independent run}
+\begingroup\small
+\begin{longtable}{p{0.153\textwidth}p{0.153\textwidth}p{0.153\textwidth}p{0.153\textwidth}p{0.153\textwidth}p{0.153\textwidth}}
+\toprule
+Agent & Optimize & Select & Test & Unused & Seconds \\
+\midrule\endhead
+GA & 84,244 & 17,393 & 1,540 & 15,756 & 10.7 \\
+GA-PPO & 99,003 & 8,215 & 12,821 & 997 & 33.5 \\
+PPO & 99,328 & 9,049 & 16,937 & 672 & 37.7 \\
+PPO-short & 89,088 & 9,129 & 19,000 & 0 & 33.6 \\
+Random & 0 & 0 & 1,952 & 0 & 0.0 \\
+\bottomrule\end{longtable}
+\endgroup
+\subsection*{Paired training-seed contrasts}
+\begingroup\small
+\begin{longtable}{p{0.230\textwidth}p{0.230\textwidth}p{0.230\textwidth}p{0.230\textwidth}}
+\toprule
+Contrast & Pairs & Difference & 95\% bootstrap CI \\
+\midrule\endhead
+hybrid - ppo & 1 & -56.0 & not estimated \\
+hybrid - ppo\_short & 1 & -11.2 & not estimated \\
+hybrid - ga & 1 & +13.7 & not estimated \\
+\bottomrule\end{longtable}
+\endgroup
+\subsection*{Actor transfer audit (validation returns)}
+\begingroup\small
+\begin{longtable}{p{0.153\textwidth}p{0.153\textwidth}p{0.153\textwidth}p{0.153\textwidth}p{0.153\textwidth}p{0.153\textwidth}}
+\toprule
+Seed & Initial & After GA & Transfer & Logit error & Updated \\
+\midrule\endhead
+11 & -159.9 & -154.8 & -154.8 & 0.00e+00 & True \\
+\bottomrule\end{longtable}
+\endgroup
+\subsection*{Hybrid stage trajectory (same validation starts)}
+\begingroup\small
+\begin{longtable}{p{0.153\textwidth}p{0.153\textwidth}p{0.153\textwidth}p{0.153\textwidth}p{0.153\textwidth}p{0.153\textwidth}}
+\toprule
+Seed & Before GA & After GA & Final PPO & Best PPO & Final gain \\
+\midrule\endhead
+11 & -159.9 & -154.8 & -198.6 & -151.9 & -43.8 \\
+\bottomrule\end{longtable}
+\endgroup
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.96\textwidth]{figures/final_performance.png}
+\caption{Final performance}
+\end{figure}
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.96\textwidth]{figures/learning_curves.png}
+\caption{Learning curves}
+\end{figure}
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.96\textwidth]{figures/ga_evolution.png}
+\caption{Ga evolution}
+\end{figure}
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.96\textwidth]{figures/return_distribution.png}
+\caption{Return distribution}
+\end{figure}
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.96\textwidth]{figures/runtime.png}
+\caption{Runtime}
+\end{figure}
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.96\textwidth]{figures/interaction_accounting.png}
+\caption{Interaction accounting}
+\end{figure}
+\section*{6.1. Sensitivity and robustness execution status}
+\addcontentsline{toc}{section}{6.1. Sensitivity and robustness execution status}
+Executed sensitivity source: results/ablations/sweep\_eed27f6fcc\_20261109T151055Z\_a7de6f. 22 measured agent runs; development seeds start at 60,000. The sensitivity budget can differ from the main study, so these results are exploratory.
+
+The full three-seed, one-million-transition-per-agent sensitivity suite was not executed. The delivered smaller sweep tests the pipeline and provides exploratory measurements; it does not replace confirmatory ablations.
+
+Within the tested hybrid variants for ga.crossover\_probability, the highest development mean was -125.6 at 0. This is an exploratory selection across 2 settings, not an independently confirmed optimum. The baseline configuration was not changed in response to these results.
+
+Within the tested hybrid variants for ga.mutation\_sigma, the highest development mean was 21.3 at 0.02. This is an exploratory selection across 3 settings, not an independently confirmed optimum. The baseline configuration was not changed in response to these results.
+
+Within the tested hybrid variants for ga.population\_size, the highest development mean was 189.7 at 20. This is an exploratory selection across 3 settings, not an independently confirmed optimum. The baseline configuration was not changed in response to these results.
+
+Within the tested hybrid variants for hybrid.ga\_budget\_fraction, the highest development mean was -102.9 at 0.4. This is an exploratory selection across 3 settings, not an independently confirmed optimum. The baseline configuration was not changed in response to these results.
+
+\subsection*{Sensitivity results (development hold-out)}
+\begingroup\small
+\begin{longtable}{p{0.131\textwidth}p{0.131\textwidth}p{0.131\textwidth}p{0.131\textwidth}p{0.131\textwidth}p{0.131\textwidth}p{0.131\textwidth}}
+\toprule
+Parameter & Value & Agent & Seeds & Budget & Gen. & Return \\
+\midrule\endhead
+Crossover prob. & 0.0 & GA & 1 & 160,000 & 200 & -68.2 \\
+Crossover prob. & 0.0 & GA-PPO & 1 & 160,000 & 42 & -125.6 \\
+Crossover prob. & 0.7 & GA & 1 & 160,000 & 171 & -121.2 \\
+Crossover prob. & 0.7 & GA-PPO & 1 & 160,000 & 42 & -127.4 \\
+Mutation SD & 0.02 & GA & 1 & 160,000 & 156 & -95.4 \\
+Mutation SD & 0.02 & GA-PPO & 1 & 160,000 & 32 & 21.3 \\
+Mutation SD & 0.05 & GA & 1 & 160,000 & 171 & -121.2 \\
+Mutation SD & 0.05 & GA-PPO & 1 & 160,000 & 42 & -127.4 \\
+Mutation SD & 0.1 & GA & 1 & 160,000 & 176 & -159.2 \\
+Mutation SD & 0.1 & GA-PPO & 1 & 160,000 & 41 & -166.9 \\
+Population & 10.0 & GA & 1 & 160,000 & 171 & -121.2 \\
+Population & 10.0 & GA-PPO & 1 & 160,000 & 42 & -127.4 \\
+Population & 20.0 & GA & 1 & 160,000 & 77 & -108.8 \\
+Population & 20.0 & GA-PPO & 1 & 160,000 & 12 & 189.7 \\
+Population & 30.0 & GA & 1 & 160,000 & 46 & -23.7 \\
+Population & 30.0 & GA-PPO & 1 & 160,000 & 5 & -104.7 \\
+GA allocation & 0.1 & GA & 1 & 160,000 & 171 & -121.2 \\
+GA allocation & 0.1 & GA-PPO & 1 & 160,000 & 8 & -127.4 \\
+GA allocation & 0.25 & GA & 1 & 160,000 & 171 & -121.2 \\
+GA allocation & 0.25 & GA-PPO & 1 & 160,000 & 42 & -127.4 \\
+GA allocation & 0.4 & GA & 1 & 160,000 & 171 & -121.2 \\
+GA allocation & 0.4 & GA-PPO & 1 & 160,000 & 72 & -102.9 \\
+\bottomrule\end{longtable}
+\endgroup
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.96\textwidth]{figures/ga_crossover_probability.png}
+\caption{Ga crossover probability}
+\end{figure}
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.96\textwidth]{figures/ga_mutation_sigma.png}
+\caption{Ga mutation sigma}
+\end{figure}
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.96\textwidth]{figures/ga_population_size.png}
+\caption{Ga population size}
+\end{figure}
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.96\textwidth]{figures/hybrid_ga_budget_fraction.png}
+\caption{Hybrid ga budget fraction}
+\end{figure}
+\section*{7. Discussion and limitations}
+\addcontentsline{toc}{section}{7. Discussion and limitations}
+The measured hybrid-minus-PPO difference is -56.0 return points, and the hybrid-minus-PPO-short difference is -11.2. These comparisons must be read alongside seed variation, unequal unused residuals, checkpoint selection and computational overhead. A positive point estimate alone is insufficient to establish a robust benefit; a negative estimate is evidence against the proposed advantage for this configuration.
+
+The hybrid exceeds PPO in 0 of 1 matched training seeds. Its mean training-and-selection wall time differs from PPO by -4.2 seconds. The point estimate does not support a hybrid advantage over full-budget PPO in this experiment. Exact initialization transfer therefore should not be confused with improved sample efficiency.
+
+The transfer test answers an engineering question: whether PPO starts from the actual evolved actor. It does not demonstrate that this actor is easy to fine-tune. Deterministic GA behavior and stochastic PPO exploration can differ sharply even when their logits match. A fresh critic may initially provide noisy advantages. Useful GA behavior may be lost during early policy-gradient updates.
+
+The selected checkpoint can precede the final optimizer update. Reported final-test performance therefore means performance after the complete training-and-selection procedure, not necessarily the last policy. Sensitivity findings use a distinct development evaluation set; they should not be used to tune against the main test set. Repeated validation across many generations can overfit the small validation set.
+
+The return-per-interaction ratio is provided for completeness but is not a stable efficiency ranking when returns can be negative or shifted by constants. Observed threshold crossings and learning curves are more interpretable. Thresholds that were never observed are marked not reached within budget.
+
+\section*{8. Conclusion}
+\addcontentsline{toc}{section}{8. Conclusion}
+The project implements and measures a reproducible preliminary comparison of evolutionary search, PPO and GA-initialized PPO. It establishes exact actor transfer, functioning gradient refinement, saved-model evaluation and transparent budget accounting. The recorded results above, rather than an assumed hybrid advantage, determine the comparative conclusion.
+
+RQ1 and RQ2 are assessed through GA validation and transfer records. RQ3 and RQ4 are assessed through observed learning curves and paired final performance. RQ5 requires the sensitivity runs reported in the supplement status below. RQ6 is addressed by measured runtime and total interactions. RQ7 remains limited by the number of independent training seeds and the robustness conditions actually executed. No unexecuted experiment is treated as supporting evidence.
+
+\section*{9. Future work}
+\addcontentsline{toc}{section}{9. Future work}
+Extend to five or more training seeds, larger held-out validation sets, matched selection overhead, adaptive mutation, alternating evolution and PPO, population-based hyperparameter training, structured crossover, and continuous-control tasks. Consider critic warm-up and actor entropy diagnostics to explain why an evolved deterministic policy may be unstable during stochastic fine-tuning.
+
+\section*{Appendix: reproducibility and artifact lineage}
+\addcontentsline{toc}{section}{Appendix: reproducibility and artifact lineage}
+Primary data source: results/raw/quick\_c28c75b1b2\_20261109T150437Z\_3dac13. Configuration hash: c28c75b1b2. The report was generated from that explicit suite; no implicit latest-run selection is used.
+
+Install using Python 3.11 and the saved version snapshot, run scripts.doctor, then pytest. Execute scripts.run\_all with the appropriate YAML. Regenerate using scripts.generate\_report --run <suite>. See README.md and REPRODUCIBILITY.md for exact PowerShell commands and the execution record.
+
+GA checkpoints store NumPy arrays plus JSON metadata, without object pickle. SB3 model files use its native serialization and should only be loaded from trusted sources. GA resumes exactly at a generation boundary under the same software. PPO models save optimizer state, but restarting the environment is not bitwise equivalent to an uninterrupted run. The suite safely archives interrupted attempts and restarts that agent.
+
+The PDF is generated with ReportLab because no LaTeX compiler was found during implementation. The supplied main.tex and references.bib provide an alternative source build: pdflatex main; bibtex main; pdflatex main; pdflatex main. Numerical results are shared across Markdown, LaTeX and PDF outputs.
+
+\subsection*{First observed validation threshold (optimization steps)}
+\begingroup\small
+\begin{longtable}{p{0.230\textwidth}p{0.230\textwidth}p{0.230\textwidth}p{0.230\textwidth}}
+\toprule
+Agent & Seed & Threshold & Observed crossing \\
+\midrule\endhead
+GA-PPO & 11 & 0 & not reached \\
+GA-PPO & 11 & 100 & not reached \\
+GA-PPO & 11 & 200 & not reached \\
+PPO & 11 & 0 & not reached \\
+PPO & 11 & 100 & not reached \\
+PPO & 11 & 200 & not reached \\
+PPO-short & 11 & 0 & not reached \\
+PPO-short & 11 & 100 & not reached \\
+PPO-short & 11 & 200 & not reached \\
+\bottomrule\end{longtable}
+\endgroup
+\subsection*{Per-seed final-test means}
+\begingroup\small
+\begin{longtable}{p{0.184\textwidth}p{0.184\textwidth}p{0.184\textwidth}p{0.184\textwidth}p{0.184\textwidth}}
+\toprule
+Agent & Seed & Return & Solved & Selected PPO step \\
+\midrule\endhead
+GA & 11 & -131.3 & 0.0\% & n/a \\
+GA-PPO & 11 & -117.6 & 0.0\% & 61,440 \\
+PPO & 11 & -61.6 & 0.0\% & 81,920 \\
+PPO-short & 11 & -106.4 & 0.0\% & 89,088 \\
+Random & 11 & -200.3 & 0.0\% & n/a \\
+\bottomrule\end{longtable}
+\endgroup
+\subsection*{Resolved hyperparameters}
+\begingroup\small
+\begin{longtable}{p{0.500\textwidth}p{0.400\textwidth}}
+\toprule
+Setting & Value \\
+\midrule\endhead
+environment.id & LunarLander-v3 \\
+environment.continuous & False \\
+environment.enable\_wind & False \\
+environment.gravity & -10.0 \\
+environment.max\_episode\_steps & 1000 \\
+experiment.seeds & [11] \\
+experiment.total\_optimization\_steps & 100000 \\
+experiment.final\_eval\_episodes & 20 \\
+experiment.checkpoint\_interval & 20000 \\
+experiment.validation\_episodes & 3 \\
+experiment.threads & 1 \\
+network.actor\_hidden & [64, 64] \\
+network.critic\_hidden & [64, 64] \\
+network.activation & tanh \\
+ga.population\_size & 8 \\
+ga.elite\_count & 2 \\
+ga.tournament\_size & 3 \\
+ga.mutation\_probability & 0.05 \\
+ga.mutation\_sigma & 0.05 \\
+ga.crossover\_probability & 0.7 \\
+ga.crossover\_type & uniform \\
+ga.fitness\_episodes & 2 \\
+ga.immigrant\_rate & 0.0 \\
+ga.max\_generations & None \\
+ppo.learning\_rate & 0.0003 \\
+ppo.gamma & 0.999 \\
+ppo.gae\_lambda & 0.98 \\
+ppo.clip\_range & 0.2 \\
+ppo.n\_steps & 512 \\
+ppo.batch\_size & 64 \\
+ppo.n\_epochs & 4 \\
+ppo.ent\_coef & 0.01 \\
+ppo.n\_envs & 2 \\
+ppo.device & cpu \\
+hybrid.ga\_budget\_fraction & 0.25 \\
+hybrid.transfer\_actor\_only & True \\
+evaluation.deterministic & True \\
+evaluation.solved\_reward\_threshold & 200 \\
+evaluation.validation\_seed\_start & 20000 \\
+evaluation.final\_seed\_start & 40000 \\
+\bottomrule\end{longtable}
+\endgroup
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.96\textwidth]{figures/ga_diversity.png}
+\caption{Ga diversity}
+\end{figure}
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.96\textwidth]{figures/ppo_only_axis.png}
+\caption{Ppo only axis}
+\end{figure}
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.96\textwidth]{figures/total_interactions.png}
+\caption{Total interactions}
+\end{figure}
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.96\textwidth]{figures/wall_time_learning.png}
+\caption{Wall time learning}
+\end{figure}
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.96\textwidth]{figures/solved_rates.png}
+\caption{Solved rates}
+\end{figure}
+\clearpage
+\nocite{*}
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}

@@ -1,0 +1,8 @@
+{
+  "selection_steps": 409,
+  "best_validation": -537.7017405257742,
+  "last_checkpoint": 0,
+  "elapsed_seconds": 0.11508619994856417,
+  "selected_ppo_steps": 0,
+  "initial_return": -537.7017405257742
+}

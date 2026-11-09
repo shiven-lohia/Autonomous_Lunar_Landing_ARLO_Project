@@ -1,0 +1,19 @@
+name: ablation_quick
+# Exploratory sensitivity: deliberately smaller than the main full-budget study.
+experiment:
+  seeds: [11]
+  total_optimization_steps: 160000
+  final_eval_episodes: 20
+  validation_episodes: 3
+  checkpoint_interval: 40000
+ga:
+  population_size: 10
+  fitness_episodes: 1
+ppo:
+  n_steps: 512
+  n_envs: 2
+sweep:
+  ga.mutation_sigma: [0.02, 0.05, 0.10]
+  ga.population_size: [10, 20, 30]
+  hybrid.ga_budget_fraction: [0.10, 0.25, 0.40]
+  ga.crossover_probability: [0.0, 0.7]

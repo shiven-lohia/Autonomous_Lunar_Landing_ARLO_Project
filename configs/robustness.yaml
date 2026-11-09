@@ -1,0 +1,8 @@
+name: robustness
+# Evaluation only: uses source suite's test seeds and selected models.
+conditions:
+  default: {}
+  lighter_gravity: {gravity: -8.0}
+  heavier_gravity: {gravity: -11.5}
+  wind: {enable_wind: true, wind_power: 10.0, turbulence_power: 1.0}
+  stronger_wind: {enable_wind: true, wind_power: 15.0, turbulence_power: 1.5}

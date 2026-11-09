@@ -1,0 +1,16 @@
+{
+  "max_logit_error": 0.0,
+  "observations_checked": 40,
+  "actor_tensors_copied": 6,
+  "critic_unchanged": true,
+  "actions_match": true,
+  "verification_steps": 0,
+  "actor_changed_after_ppo": true,
+  "ga_initial_validation": -159.8608170398854,
+  "ga_selected_validation": -84.8420462325779,
+  "post_transfer_validation": -84.8420462325779,
+  "ga_generations": 12,
+  "ga_seed": 11,
+  "ppo_seed": 11,
+  "ga_source": "ga/selected.npz"
+}

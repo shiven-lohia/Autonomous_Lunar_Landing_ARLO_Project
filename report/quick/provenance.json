@@ -1,0 +1,20 @@
+{
+  "suite": "results\\raw\\quick_c28c75b1b2_20261109T150437Z_3dac13",
+  "supplements": [
+    "results\\ablations\\sweep_eed27f6fcc_20261109T151055Z_a7de6f"
+  ],
+  "source_sha256": {
+    "results\\raw\\quick_c28c75b1b2_20261109T150437Z_3dac13\\manifest.json": "dd20f6180e58a838140294de90029347c6f07bf1801d4134b4747b1044ce76e5",
+    "results\\raw\\quick_c28c75b1b2_20261109T150437Z_3dac13\\ga_seed11\\summary.json": "4c1aa26696e0836ae5f7336a73c60d9429ba0aecb6b166b31509a996c5ae1257",
+    "results\\raw\\quick_c28c75b1b2_20261109T150437Z_3dac13\\hybrid_seed11\\summary.json": "225a167cda087df58734014b323aa885d57c30cfa87a6e363d7ac2518c615f36",
+    "results\\raw\\quick_c28c75b1b2_20261109T150437Z_3dac13\\ppo_seed11\\summary.json": "799ed91227853847c9613ea273fe86c75e508edfa87befe449998830a7af2165",
+    "results\\raw\\quick_c28c75b1b2_20261109T150437Z_3dac13\\ppo_short_seed11\\summary.json": "52084e9ffdd0ef9b9c6a4ea440d96461c62a77afc82179579556de8e4f5221ea",
+    "results\\raw\\quick_c28c75b1b2_20261109T150437Z_3dac13\\random_seed11\\summary.json": "104d3d1213fe9788aa0f2d4cd469c7ce1aa60bf17cd5b59d18a1c9b1299e2924",
+    "results\\raw\\quick_c28c75b1b2_20261109T150437Z_3dac13\\ga_seed11\\evaluation.csv": "9ed00e4f1b0c014b6e549adfec47893039584ac6523665b65e31b6c33933782b",
+    "results\\raw\\quick_c28c75b1b2_20261109T150437Z_3dac13\\hybrid_seed11\\evaluation.csv": "1a3e8a37f26fd980b528050d586673e733e72f8fb1707c2d86bca02e688830f4",
+    "results\\raw\\quick_c28c75b1b2_20261109T150437Z_3dac13\\ppo_seed11\\evaluation.csv": "12536463daffc5156ffdf185d9123a19aa43cfb6fa108519d1e35c1bd09f0b94",
+    "results\\raw\\quick_c28c75b1b2_20261109T150437Z_3dac13\\ppo_short_seed11\\evaluation.csv": "79493347b0d6f24c432bb6798037f2f3b471369a78c764f144f1b2200a9cfe5c",
+    "results\\raw\\quick_c28c75b1b2_20261109T150437Z_3dac13\\random_seed11\\evaluation.csv": "20b80b01774a9e5d6c55bdd5a5820010e89aa6121c026f11c9aa8e6da746dd16",
+    "results\\ablations\\sweep_eed27f6fcc_20261109T151055Z_a7de6f\\sweep_results.csv": "8a054cd7bb256d772f86d86247cd8946844ad18cae9938828e744fe2205823a1"
+  }
+}

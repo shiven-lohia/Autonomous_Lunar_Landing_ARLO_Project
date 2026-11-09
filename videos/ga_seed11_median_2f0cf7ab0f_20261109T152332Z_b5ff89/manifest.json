@@ -1,0 +1,14 @@
+{
+  "suite": "results\\raw\\full_2f0cf7ab0f_20261109T150901Z_6d56ad",
+  "agent": "ga",
+  "training_seed": 11,
+  "episodes": [
+    {
+      "path": "episode_40037.mp4",
+      "episode_seed": 40037,
+      "return": -34.99117954792703,
+      "steps": 137,
+      "selection": "median"
+    }
+  ]
+}

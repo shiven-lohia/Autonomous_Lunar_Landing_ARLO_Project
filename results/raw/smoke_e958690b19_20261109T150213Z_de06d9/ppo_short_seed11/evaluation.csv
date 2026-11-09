@@ -1,0 +1,4 @@
+episode_seed,return,length,terminated,truncated,outcome,solved,engine_actions,deterministic
+40000,-559.538330118924,97,True,False,out_of_bounds,False,97,True
+40001,-1035.6380503755336,140,True,False,out_of_bounds,False,140,True
+40002,-503.6801618933096,97,True,False,out_of_bounds,False,97,True

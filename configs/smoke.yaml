@@ -1,0 +1,18 @@
+name: smoke
+experiment:
+  seeds: [11]
+  total_optimization_steps: 24000
+  final_eval_episodes: 3
+  validation_episodes: 2
+  checkpoint_interval: 4096
+ga:
+  population_size: 4
+  elite_count: 1
+  tournament_size: 2
+  fitness_episodes: 1
+  max_generations: 2
+ppo:
+  n_steps: 128
+  n_envs: 1
+  batch_size: 32
+  n_epochs: 2

@@ -1,0 +1,11 @@
+{
+  "selection_steps": 1134,
+  "best_validation": -162.3070565779204,
+  "last_checkpoint": 23296,
+  "elapsed_seconds": 13.29030689992942,
+  "selected_ppo_steps": 0,
+  "initial_return": -162.3070565779204,
+  "ppo_steps": 23296,
+  "unused_ppo_budget": 35,
+  "resumed_with_fresh_environment": false
+}

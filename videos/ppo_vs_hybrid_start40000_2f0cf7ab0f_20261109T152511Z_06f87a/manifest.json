@@ -1,0 +1,19 @@
+{
+  "suite": "results\\raw\\full_2f0cf7ab0f_20261109T150901Z_6d56ad",
+  "training_seed": 11,
+  "episode_seed": 40000,
+  "selection": "predeclared common start",
+  "agents": [
+    "ppo",
+    "hybrid"
+  ],
+  "returns": [
+    275.0301291289888,
+    253.78540342982674
+  ],
+  "steps": [
+    265,
+    352
+  ],
+  "extra_evaluation_interactions": 617
+}

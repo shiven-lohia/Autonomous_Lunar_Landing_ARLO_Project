@@ -1,0 +1,9 @@
+{
+  "reason": "Independent seed workers; retain completed seed11 random, GA, PPO and hybrid runs",
+  "terminated_original_process_ids": [
+    22668,
+    28412
+  ],
+  "incomplete_next_agent": "Preserved in interrupted_attempts by resume; excluded from successful-run budget",
+  "workers": 3
+}

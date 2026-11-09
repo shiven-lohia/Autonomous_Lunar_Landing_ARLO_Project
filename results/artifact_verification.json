@@ -1,0 +1,47 @@
+{
+  "suite": "results\\raw\\quick_c28c75b1b2_20261109T150437Z_3dac13",
+  "models": [
+    {
+      "agent": "ga",
+      "seed": 11,
+      "reevaluation_steps": 1540,
+      "reproduced": true
+    },
+    {
+      "agent": "hybrid",
+      "seed": 11,
+      "reevaluation_steps": 12821,
+      "reproduced": true
+    },
+    {
+      "agent": "ppo",
+      "seed": 11,
+      "reevaluation_steps": 16937,
+      "reproduced": true
+    },
+    {
+      "agent": "ppo_short",
+      "seed": 11,
+      "reevaluation_steps": 19000,
+      "reproduced": true
+    },
+    {
+      "agent": "random",
+      "seed": 11,
+      "reevaluation_steps": 1952,
+      "reproduced": true
+    }
+  ],
+  "additional_verification_interactions": 52250,
+  "pdf_pages": 15,
+  "decoded_videos": [
+    {
+      "path": "videos\\hybrid_seed11_median_c28c75b1b2_20261109T150943Z_5a0a5b\\episode_40008.mp4",
+      "first_frame_shape": [
+        400,
+        600,
+        3
+      ]
+    }
+  ]
+}
