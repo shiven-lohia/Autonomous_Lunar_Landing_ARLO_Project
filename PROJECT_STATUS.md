@@ -1,6 +1,6 @@
 # Project status
 
-Status while experiments execute. This file will be updated with the final verified handoff.
+Final handoff status. Verified on a fresh clone: Python 3.12.2 venv, `scripts.doctor` succeeds, 26/26 pytest pass, ruff clean.
 
 | Component | Evidence / status |
 |---|---|
@@ -11,15 +11,15 @@ Status while experiments execute. This file will be updated with the final verif
 | Hybrid | Actor transfer verified; optimizer changes actor; full seed-11 run completed |
 | Five-agent smoke suite | Completed with reloadable models and evaluation CSVs |
 | Quick suite | Completed; all five checkpoints independently re-evaluated with identical returns |
-| Main three-seed study | Running; independent seed worker support tested |
-| Sensitivity | Reduced-budget mutation/population/allocation/crossover sweep running |
-| Robustness | Implemented; full-suite execution follows training |
-| Plots | Quick-run PNG and SVG plots generated and inspected |
-| Report | Quick PDF, Markdown and LaTeX generated; PDF rendered and visually checked |
+| Main three-seed study | Completed (3 seeds x 5 agents, status `complete`); report in `report/full/` |
+| Sensitivity | Reduced-budget exploratory sweep completed (11 variants); larger sweep not executed |
+| Robustness | Completed, with one gap: `ppo_short_seed23` was not evaluated (its checkpoint was not in the repo), so PPO-short robustness uses seeds 11 and 37 only |
+| Plots | Quick-run and full-run PNG/SVG plots generated (full plots not visually inspected) |
+| Report | Quick and full (`report/full/`) PDF, Markdown and LaTeX generated; full PDF not yet visually checked; student/institution fields left blank |
 | Gameplay | Median-selected random, GA, PPO and hybrid videos recorded from full seed 11 |
 | Statistical analysis | Seed-level bootstrap, paired differences, thresholds and interaction tables implemented |
 | Dependencies | Verified exact snapshot saved in requirements-lock.txt |
 | Larger confirmatory ablations | Implemented/configured; not yet executed |
-| LaTeX compilation | Compiler unavailable; ReportLab PDF works; LaTeX source supplied |
+| LaTeX compilation | Not compiled; ReportLab PDF works; LaTeX source supplied (MiKTeX present locally but pdflatex stalled on package install) |
 
 No reported result is synthetic. See run manifests and raw CSV files for the evidence.
